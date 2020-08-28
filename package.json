@@ -6,5 +6,28 @@
     "command-line-usage": "^6.1.0",
     "node-fetch": "^2.6.0",
     "simple-proxy-agent": "^1.0.8"
-  }
+  },
+  "name": "proxy-checker-cli",
+  "description": "Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully.",
+  "version": "1.0.0",
+  "main": "test.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/restyler/proxy-checker-cli.git"
+  },
+  "keywords": [
+    "proxy-checker",
+    "proxy",
+    "cli"
+  ],
+  "author": "restyler <pixeljetsdev@gmail.com> (https://pixeljets.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/restyler/proxy-checker-cli/issues"
+  },
+  "homepage": "https://github.com/restyler/proxy-checker-cli#readme"
 }
