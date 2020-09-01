@@ -1,5 +1,5 @@
 # proxy-checker-cli
-Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully.
+Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully. Processes proxies concurrently (20 threads are running at the same time by default) so can be used for quite large files without overloading the server resource.
 
 Example usage:
 
@@ -15,6 +15,26 @@ Checks included out of the box:
 - Expected no specified text in body ( --notext=error )
 
 
+Options list:
+```
+  --input file                The input file to process. The file is expected to contain       
+                              ip:port lines without protocol specified. This is a default      
+                              argument.                                                        
+  -o, --output file           Output good ips to txt file.                                     
+  -v, --verbose               Turn on debug output.                                            
+  -s, --silent                Do not output visual table, only write result to files.          
+  -h, --help                  Print this usage guide.                                          
+  -t, --timeout number        Number of seconds to wait for connection to proxy and for the    
+                              whole request.                                                   
+  -p, --protocol string       Protocol to append to proxy ip (the file is expected to contain  
+                              ip:port lines without protocol specified).                       
+  -u, --url string            Url to connect to validate proxy.                                
+  --text string               Text expected in body to validate proxy.                         
+  --notext string             Text expected to not exist in body to validate proxy.            
+  --code string               Http code expected for test to succeed.                          
+  -c, --concurrency integer   Maximum Concurrency threads (default: 20)    
+```  
+  
 Sample output to terminal:
 ```
 ┌─────────────────────┬────────┬──────┬────────────────────────────────┐
