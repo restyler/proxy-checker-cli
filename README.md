@@ -13,15 +13,14 @@ npm install
 
 Which will get proxies from `listofproxies.txt` file, try to request https://google.com and check that reply http code is 20x
 
-Full list of options is available via `test.js --help`
 
-Checks included out of the box:
+## Proxy tests included out of the box:
 - Expected http code ( --code=200 ) - regex supported
 - Expected text in body ( --text=sometext
 - Expected no specified text in body ( --notext=error )
 
 
-Options list:
+## Arguments list:
 ```
   --input file                The input file to process. The file is expected to contain       
                               ip:port lines without protocol specified. This is a default      
@@ -41,7 +40,7 @@ Options list:
   -c, --concurrency integer   Maximum Concurrency threads (default: 20)    
 ```  
   
-Sample output to terminal:
+## Sample output to terminal:
 ```
 ┌─────────────────────┬────────┬──────┬────────────────────────────────┐
 │ Proxy               │ Result │ Time │ Resp                           │
