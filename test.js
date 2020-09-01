@@ -1,10 +1,10 @@
-const ProxyAgent = require('simple-proxy-agent');
-const request = require('./request.js')
-const fs = require('fs');
-const Table = require('cli-table3');
-const colors = require('colors');
+const fs = require('fs')
+const Table = require('cli-table3')
+const colors = require('colors')
+const singleRequestExecute = require('./request.js')
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
+const Bottleneck = require('bottleneck')
 
 const allowedProtocols = ['http', 'https', 'socks5']
 const urlPresets = {
@@ -24,13 +24,13 @@ const optionDefinitions = [
   { name: 'url', alias: 'u', type: String, defaultValue: urlPresets.ifconfig },
   { name: 'text', type: String },
   { name: 'notext', type: String },
-  { name: 'code', type: String }
+  { name: 'code', type: String },
+  { name: 'concurrency', alias: 'c', type: Number, defaultValue: 20 }
 ]
 
 
 const options = commandLineArgs(optionDefinitions)
 
-//console.log(options);return;
 
 const sections = [
   {
@@ -77,6 +77,10 @@ const sections = [
       {
         name: 'silent',
         description: 'Do not output visual table, only write result to files'
+      },
+      {
+        name: 'concurrency',
+        description: 'Maximum Concurrency threads (default: 20)'
       }
     ]
   }
@@ -110,81 +114,33 @@ if (options.silent) {
   options.verbose = false;
 }
 
+const limiter = new Bottleneck({
+  maxConcurrent: options.concurrency,
+  minTime: 0
+})
+
 
 const url = urlPresets[options.url] ? urlPresets[options.url] : options.url
 
 
-var lines = fs.readFileSync(options.input, 'utf8').split('\n');
+let lines = fs.readFileSync(options.input, 'utf8').split('\n')
 
-let agents = [];
-let promises = [];
 
 let startMs = Date.now();
 
-for (i = 0; i<lines.length; i++) {
-  let proxyName = lines[i];
 
-  agents[i] = ProxyAgent(options.protocol + '://' + lines[i], {
-    timeout: options.timeout * 1000,
-    tunnel: true
-  });
-  console.time(proxyName);
-  
-  promises[i] = new Promise((resolve, reject) => {
-    let res = {};
-    res.name = proxyName;
-    if (options.verbose) {
-      console.log('Queueing %s', proxyName);
-    }
+let singleRequestExecuteLimited = limiter.wrap(singleRequestExecute)
 
-    return request(url, {agent: agents[i], timeout: options.timeout}, options.timeout).then(async resp => { 
-      res.success = true;
-      let response = (await resp.text());
-      if (options.verbose) {
-        console.log('Received response from %s', proxyName);
-      }
-
-      if (options.code) {
-        let r = new RegExp('/' + options.code + '/');
-        if (r.test(resp.status)) {
-          res.success = false;
-          res.error = 'Bad code:' + resp.status;
-        }
-      }
-
-      if (options.text) {
-        if (!response.includes(options.text)) {
-          res.success = false;
-          res.error = 'Expected text not found';
-        }
-      }
-
-      if (options.notext) {
-        if (response.includes(options.notext)) {
-          res.success = false;
-          res.error = 'Not expected text found';
-        }
-      }
-      res.response = response.substring(0, 30).trim();
-    }).catch(err => {
-      res.success = false;
-      res.error = err.message.substring(0, 30).trim();
-      if (options.verbose) {
-        console.log('Failed response from %s', proxyName);
-      }
-    }).finally(() => { 
-      res.time = ((Date.now() - startMs)/1000).toFixed(1);
-      resolve(res);
-    });
-  });
-}
+promises = lines.filter(String).map((proxyAddr) => 
+  singleRequestExecuteLimited(url, proxyAddr, options)
+)
 
 
 Promise.all(promises).then((results) => {
 
   if (!options.silent) {
     let table = new Table({style: {head: ['cyan']}, head: [
-      'Proxy', 'Result', 'Time', 'Resp'
+      'Proxy', 'Result', 'Time', 'Response'
     ]});
     results.map((item) => {
       table.push([
@@ -198,22 +154,26 @@ Promise.all(promises).then((results) => {
     console.log(table.toString());
   }
   
+  let good = results.reduce((a,c) => a + (c.success ? 1 : 0), 0);
 
   if (options.output) {
     let file = fs.createWriteStream(options.output);
-    let good = 0;
-
     file.on('error', function(err) { /* error handling */ })
     results.forEach(function(v) {
       if (v.success) {
-        good++
         file.write(v.name + '\n')
       }
     })
     file.end();
-
     if (options.verbose) {
-      console.log('Written %d good proxies out of %d to %s', good, results.length, options.output);
+      console.log('Results put to %s', options.output)
     }
+    
   }
+
+  if (options.verbose) {
+    console.log('Finished in %s', (Date.now() - startMs)/1000 + 's')
+    console.log('Found %d good proxies out of %d', good, results.length, options.output);
+  }
+
 });

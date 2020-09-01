@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bottleneck": "^2.19.5",
     "cli-table3": "^0.6.0",
     "colors": "^1.4.0",
     "command-line-args": "^5.1.1",
