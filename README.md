@@ -1,7 +1,13 @@
 # proxy-checker-cli
-Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully. Processes proxies concurrently (20 threads are running at the same time by default) so can be used for quite large files without overloading the server resource.
+Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully. Processes proxies concurrently (20 threads are running at the same time by default) so can be used for quite large files without overloading the server resources.
 
-Example usage:
+## Installation
+```
+git clone https://github.com/restyler/proxy-checker-cli.git .
+npm install
+```
+
+## Example usage:
 
 ```node test.js listofproxies.txt --code=20. -o goodproxies.txt  --url=https://google.com```
 
