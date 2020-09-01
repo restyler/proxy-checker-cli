@@ -14,18 +14,83 @@ const urlPresets = {
 }
 
 const optionDefinitions = [
-  { name: 'verbose', alias: 'v', type: Boolean },
-  { name: 'silent', alias: 's', type: Boolean, defaultValue: false },
-  { name: 'help', alias: 'h', type: Boolean },
-  { name: 'output', alias: 'o', type: String },
-  { name: 'input', type: String, defaultOption: true },
-  { name: 'timeout', alias: 't', type: Number, defaultValue: 5 },
-  { name: 'protocol', alias: 'p', type: String, defaultValue: allowedProtocols[1] },
-  { name: 'url', alias: 'u', type: String, defaultValue: urlPresets.ifconfig },
-  { name: 'text', type: String },
-  { name: 'notext', type: String },
-  { name: 'code', type: String },
-  { name: 'concurrency', alias: 'c', type: Number, defaultValue: 20 }
+  { 
+    name: 'input', 
+    type: String, 
+    defaultOption: true, 
+    typeLabel: '{underline file}',
+    description: 'The input file to process. The file is expected to contain ip:port lines without protocol specified. This is a default argument.'
+  },
+  { 
+    name: 'output', 
+    alias: 'o', 
+    type: String,
+    typeLabel: '{underline file}',
+    description: 'Output good ips to txt file.'
+  },
+  { 
+    name: 'verbose', 
+    alias: 'v', 
+    type: Boolean,
+    description: 'Turn on debug output.'
+  },
+  { 
+    name: 'silent', 
+    alias: 's', 
+    type: Boolean, 
+    defaultValue: false,
+    description: 'Do not output visual table, only write result to files.'
+  },
+  { 
+    name: 'help', 
+    alias: 'h', 
+    type: Boolean,
+    description: 'Print this usage guide.'
+  },
+  
+  { 
+    name: 'timeout', 
+    alias: 't', 
+    type: Number, 
+    defaultValue: 5,
+    description: 'Number of seconds to wait for connection to proxy and for the whole request.'
+  },
+  { 
+    name: 'protocol', 
+    alias: 'p', type: String, 
+    defaultValue: allowedProtocols[1],
+    description: 'Protocol to append to proxy ip (the file is expected to contain ip:port lines without protocol specified).'
+  },
+  { 
+    name: 'url', 
+    alias: 'u', 
+    type: String,
+    defaultValue: urlPresets.ifconfig,
+    description: 'Url to connect to validate proxy.'
+  },
+  { 
+    name: 'text',
+    type: String,
+    description: 'Text expected in body to validate proxy.'
+  },
+  { 
+    name: 'notext', 
+    type: String,
+    description: 'Text expected to not exist in body to validate proxy.'
+  },
+  { 
+    name: 'code', 
+    type: String,
+    description: 'Http code expected for test to succeed.'
+  },
+  { 
+    name: 'concurrency', 
+    alias: 'c', 
+    type: Number, 
+    defaultValue: 20,
+    description: 'Maximum Concurrency threads (default: 20)',
+    typeLabel: '{underline integer}'
+  }
 ]
 
 
@@ -39,50 +104,7 @@ const sections = [
   },
   {
     header: 'Options',
-    optionList: [
-      {
-        name: 'input',
-        typeLabel: '{underline file}',
-        description: 'The input file to process. The file is expected to contain ip:port lines without protocol specified. This is a default argument.'
-      },
-      {
-        name: 'output',
-        typeLabel: '{underline file}',
-        description: 'Output good ips to txt file.'
-      },
-      {
-        name: 'help',
-        description: 'Print this usage guide.'
-      },
-      {
-        name: 'protocol',
-        description: 'Protocol to append to proxy ip (the file is expected to contain ip:port lines without protocol specified).'
-      },
-      {
-        name: 'url',
-        description: 'Url to connect to validate proxy.'
-      },
-      {
-        name: 'text',
-        description: 'Text expected in body to validate proxy.'
-      },
-      {
-        name: 'notext',
-        description: 'Text expected to not exist in body to validate proxy.'
-      },
-      {
-        name: 'code',
-        description: 'Http code expected for test to succeed.'
-      },
-      {
-        name: 'silent',
-        description: 'Do not output visual table, only write result to files'
-      },
-      {
-        name: 'concurrency',
-        description: 'Maximum Concurrency threads (default: 20)'
-      }
-    ]
+    optionList: optionDefinitions
   }
 ]
 
@@ -148,7 +170,6 @@ Promise.all(promises).then((results) => {
         item.success ? colors.green('TRUE') : colors.red('FALSE'),
         item.time,
         item.success ? item.response : colors.red(item.error)
-  
       ]);
     })
     console.log(table.toString());
