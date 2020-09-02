@@ -13,6 +13,9 @@
   "version": "2.0.2",
   "main": "test.js",
   "devDependencies": {},
+  "bin": {
+    "proxy-checker-cli": "./bin/proxy-checker-cli"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

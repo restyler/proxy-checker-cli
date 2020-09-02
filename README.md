@@ -3,13 +3,12 @@ Simple utility which is designed to accept a file of ip:port lines and to produc
 
 ## Installation
 ```
-git clone https://github.com/restyler/proxy-checker-cli.git .
-npm install
+npm i -g proxy-checker-cli
 ```
 
 ## Example usage:
 
-```node test.js listofproxies.txt --code=20. -o goodproxies.txt  --url=https://google.com```
+```proxy-checker-cli listofproxies.txt --code=20. -o goodproxies.txt  --url=https://google.com```
 
 Which will get proxies from `listofproxies.txt` file, try to request https://google.com and check that reply http code is 20x
 
