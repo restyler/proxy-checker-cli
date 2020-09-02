@@ -102,7 +102,7 @@ const options = commandLineArgs(optionDefinitions)
 const sections = [
   {
     header: 'Simple & fast proxy checker',
-    content: 'Gets proxy list from file and tests them via set of checks, logging time and response result.\n Usage: `test.js ips.txt -t 10`'
+    content: 'Gets proxy list from file and tests them via set of checks, logging time and response result.\n Usage: `proxy-checker-cli ips.txt -t 10`'
   },
   {
     header: 'Options',
