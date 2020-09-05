@@ -11,7 +11,7 @@
   },
   "name": "proxy-checker-cli",
   "description": "Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully.",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "main": "test.js",
   "devDependencies": {},
   "bin": {
