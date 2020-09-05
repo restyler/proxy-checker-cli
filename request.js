@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
 const ProxyAgent = require('simple-proxy-agent')
+const UserAgent = require('user-agents')
 
 async function request(url, options, timeout = 5) {
   try {
@@ -31,7 +32,21 @@ async function singleRequestExecute(url, proxyAddr, options) {
       tunnel: true
     })
 
-    request(url, {agent: agent, timeout: options.timeout}, options.timeout)
+    let headers = {}
+    if (typeof options['user-agent'] == 'undefined') {
+      headers['user-agent'] = new UserAgent().toString()
+    } else {
+      headers['user-agent'] = options['user-agent']
+    }
+    
+    if (typeof options.header !== 'undefined' && options.header.length) {
+      options.header.forEach(elem => {
+        let el = elem.split(':').map(e => e.trim())
+        headers[el[0]] = el[1]
+      });
+    }
+
+    request(url, {agent, timeout: options.timeout, headers }, options.timeout)
     .then(async (resp) => {
       res = await requestProcess(res, resp, options)
     })

@@ -9,6 +9,7 @@ const commandLineUsage = require('command-line-usage')
 const Bottleneck = require('bottleneck')
 
 const allowedProtocols = ['http', 'https', 'socks5']
+
 const urlPresets = {
   instagram: 'https://www.instagram.com/graphql/query/?query_hash=e769aa130647d2354c40ea6a439bfc08&variables=%7B%22id%22%3A%221226157729%22%2C%22first%22%3A%221%22%2C%22after%22%3A%22%22%7D',
   avito: 'https://www.avito.ru/samara?q=%D0%B4%D0%B8%D0%B2%D0%B0%D0%BD',
@@ -92,12 +93,23 @@ const optionDefinitions = [
     defaultValue: 20,
     description: 'Maximum Concurrency threads (default: 20)',
     typeLabel: '{underline integer}'
+  },
+  { 
+    name: 'user-agent', 
+    type: String,
+    description: 'User agent to use for http(s) connections to tested websites.'
+  },
+  { 
+    name: 'header', 
+    type: String,
+    multiple: true,
+    description: 'Header to attach to request for http(s) connections to tested websites. Accepts multiple args.',
+    typeLabel: '{underline headername: headervalue}'
   }
 ]
 
 
 const options = commandLineArgs(optionDefinitions)
-
 
 const sections = [
   {

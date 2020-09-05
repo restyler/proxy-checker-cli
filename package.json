@@ -6,7 +6,8 @@
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
     "node-fetch": "^2.6.0",
-    "simple-proxy-agent": "^1.0.8"
+    "simple-proxy-agent": "^1.0.8",
+    "user-agents": "^1.0.559"
   },
   "name": "proxy-checker-cli",
   "description": "Simple utility which is designed to accept a file of ip:port lines and to produce beautiful table of check results in terminal and to write the file with proxies which passed the checks successfully.",
