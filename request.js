@@ -1,3 +1,5 @@
+'use strict';
+
 const fetch = require('node-fetch')
 const ProxyAgent = require('simple-proxy-agent')
 const UserAgent = require('user-agents')
@@ -23,9 +25,7 @@ async function singleRequestExecute(url, proxyAddr, options) {
     res.name = proxyAddr;
     res.startMs = Date.now();
 
-    if (options.verbose) {
-      console.log('Queueing %s', proxyAddr)
-    }
+    options.verboseLog('Queueing %s', proxyAddr)
 
     let agent = ProxyAgent(options.protocol + '://' + proxyAddr, {
       timeout: options.timeout * 1000,
@@ -53,9 +53,7 @@ async function singleRequestExecute(url, proxyAddr, options) {
     .catch(err => {
       res.success = false;
       res.error = err.message.substring(0, 30).trim();
-      if (options.verbose) {
-        console.log('Failed response from %s', proxyAddr);
-      }
+      options.verboseLog('Failed response from %s', proxyAddr)
     }).finally(() => {
       res.time = ((Date.now() - res.startMs)/1000).toFixed(1);
       resolve(res);
@@ -66,29 +64,40 @@ async function singleRequestExecute(url, proxyAddr, options) {
 async function requestProcess(res, response, options) {
   res.success = true;
   let responseText = (await response.text());
-  if (options.verbose) {
-    console.log('Received response from %s, http code: %d', res.name, response.status);
-  }
+  options.verboseLog('Received response from %s, http code: %d', res.name, response.status)
+
 
   if (options.code) {
+    
     let r = new RegExp('/' + options.code + '/');
     if (r.test(response.status)) {
       res.success = false;
       res.error = 'Bad code:' + resp.status;
+      options.verboseLog('Code check for %s: success, http code: %d', res.name, response.status)
+    } else {
+      options.verboseLog('Code check for %s: fail, http code: %d', res.name, response.status)
     }
+
+    
   }
 
   if (options.text) {
     if (!responseText.includes(options.text)) {
       res.success = false;
       res.error = 'Expected text not found';
+      options.verboseLog('Text check for %s: fail', res.name)
+    } else {
+      options.verboseLog('Text check for %s: success', res.name)
     }
   }
 
   if (options.notext) {
     if (responseText.includes(options.notext)) {
       res.success = false;
-      res.error = 'Not expected text found';
+      res.error = 'Not expected text found'
+      options.verboseLog('Notext check for %s: fail', res.name)
+    } else {
+      options.verboseLog('Notext check for %s: success', res.name)
     }
   }
   res.response = responseText.substring(0, 30).trim();

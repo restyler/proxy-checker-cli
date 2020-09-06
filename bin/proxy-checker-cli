@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 const fs = require('fs')
 const Table = require('cli-table3')
@@ -6,6 +7,7 @@ const colors = require('colors')
 const singleRequestExecute = require('../request.js')
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
+const cliProgress = require('cli-progress')
 const Bottleneck = require('bottleneck')
 
 const allowedProtocols = ['http', 'https', 'socks5']
@@ -128,22 +130,22 @@ let r = new RegExp(options.code);
 if (options.help) {
   const usage = commandLineUsage(sections)
   console.log(usage)
-  return
+  process.exit(0)
 }
 
 if (!options.input) {
   console.error('Input file with ips is required. Try --help')
-  return
+  process.exit(1)
 }
 
 if (!allowedProtocols.includes(options.protocol)) {
   console.error('Allowed protocols: ', allowedProtocols)
-  return
+  process.exit(1)
 }
 
 if (!fs.existsSync(options.input)) {
   console.error('Input file does not exist!')
-  return
+  process.exit(1)
 }
 
 if (options.silent) {
@@ -157,23 +159,41 @@ const limiter = new Bottleneck({
 
 
 const url = urlPresets[options.url] ? urlPresets[options.url] : options.url
+const lines = fs.readFileSync(options.input, 'utf8').split('\n').filter(String)
+const startMs = Date.now();
 
 
-let lines = fs.readFileSync(options.input, 'utf8').split('\n')
+options.mainLog = (...vars) => {
+  vars[0] = '\n' + vars[0]
+  options.silent ? false : console.log(...vars)
+}
+options.verboseLog = (...vars) => {
+  vars[0] = '\n' + vars[0]
+  options.verbose ? console.log(...vars) : false
+}
 
 
-let startMs = Date.now();
 
+
+if (!options.silent) {
+  var bar1 = new cliProgress.SingleBar({ stopOnComplete: true }, cliProgress.Presets.shades_classic)
+  bar1.start(lines.length, 0)
+}
 
 let singleRequestExecuteLimited = limiter.wrap(singleRequestExecute)
 
-promises = lines.filter(String).map((proxyAddr) => 
-  singleRequestExecuteLimited(url, proxyAddr, options)
+let promises = lines.map((proxyAddr) => 
+  singleRequestExecuteLimited(url, proxyAddr, options).then((result) => {
+    if (!options.silent) {
+      bar1.increment()
+    }
+
+    return result
+  })
 )
 
 
 Promise.all(promises).then((results) => {
-
   if (!options.silent) {
     let table = new Table({style: {head: ['cyan']}, head: [
       'Proxy', 'Result', 'Time', 'Response'
@@ -186,29 +206,25 @@ Promise.all(promises).then((results) => {
         item.success ? item.response : colors.red(item.error)
       ]);
     })
-    console.log(table.toString());
+    options.mainLog(table.toString())
   }
   
-  let good = results.reduce((a,c) => a + (c.success ? 1 : 0), 0);
+  let good = results.reduce((a,c) => a + (c.success ? 1 : 0), 0)
 
   if (options.output) {
-    let file = fs.createWriteStream(options.output);
+    let file = fs.createWriteStream(options.output)
     file.on('error', function(err) { /* error handling */ })
     results.forEach(function(v) {
       if (v.success) {
         file.write(v.name + '\n')
       }
     })
-    file.end();
-    if (options.verbose) {
-      console.log('Results put to %s', options.output)
-    }
-    
+    file.end()
+    options.verboseLog('Results put to %s', options.output)
   }
 
-  if (options.verbose) {
-    console.log('Finished in %s', (Date.now() - startMs)/1000 + 's')
-    console.log('Found %d good proxies out of %d', good, results.length, options.output);
-  }
+  options.verboseLog('Finished in %s', (Date.now() - startMs)/1000 + 's')
+  options.mainLog('Found %d good proxies out of %d', good, results.length)
+
 
 });
