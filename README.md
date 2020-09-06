@@ -15,7 +15,7 @@ Which will get proxies from `listofproxies.txt` file, try to request https://goo
 
 ## Proxy tests included out of the box:
 - Expected http code ( --code=200 ) - regex supported
-- Expected text in body ( --text=sometext
+- Expected text in body ( --text=sometext )
 - Expected no specified text in body ( --notext=error )
 
 
