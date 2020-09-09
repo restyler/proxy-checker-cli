@@ -69,12 +69,12 @@ async function requestProcess(res, response, options) {
 
   if (options.code) {
     
-    let r = new RegExp('/' + options.code + '/');
+    let r = new RegExp(options.code);
     if (r.test(response.status)) {
-      res.success = false;
-      res.error = 'Bad code:' + resp.status;
       options.verboseLog('Code check for %s: success, http code: %d', res.name, response.status)
     } else {
+      res.success = false;
+      res.error = 'Bad code:' + response.status;
       options.verboseLog('Code check for %s: fail, http code: %d', res.name, response.status)
     }
 
