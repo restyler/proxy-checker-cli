@@ -107,6 +107,13 @@ const optionDefinitions = [
     multiple: true,
     description: 'Header to attach to request for http(s) connections to tested websites. Accepts multiple args.',
     typeLabel: '{underline headername: headervalue}'
+  },
+  { 
+    name: 'limit', 
+    alias: 'l', 
+    type: Number,
+    description: 'Limit number of proxies to check. Can be negative to trim trailing proxies from file (like arr.slice(0, -100) in js)',
+    typeLabel: '{underline integer}'
   }
 ]
 
@@ -158,8 +165,10 @@ const limiter = new Bottleneck({
 })
 
 
+
 const url = urlPresets[options.url] ? urlPresets[options.url] : options.url
-const lines = fs.readFileSync(options.input, 'utf8').split('\n').filter(String)
+const lines = fs.readFileSync(options.input, 'utf8').split('\n').filter(String).slice(0, options.limit)
+
 const startMs = Date.now();
 
 
@@ -174,18 +183,24 @@ options.verboseLog = (...vars) => {
 
 
 
-
+var goodProxyCount = 0;
 if (!options.silent) {
-  var bar1 = new cliProgress.SingleBar({ stopOnComplete: true }, cliProgress.Presets.shades_classic)
-  bar1.start(lines.length, 0)
+  var bar1 = new cliProgress.SingleBar({ 
+    stopOnComplete: true, 
+    format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} | Good: {goodProxyCount}' 
+  }, cliProgress.Presets.shades_classic)
+
+  bar1.start(lines.length, 0, { goodProxyCount })
 }
 
 let singleRequestExecuteLimited = limiter.wrap(singleRequestExecute)
 
+
 let promises = lines.map((proxyAddr) => 
   singleRequestExecuteLimited(url, proxyAddr, options).then((result) => {
     if (!options.silent) {
-      bar1.increment()
+      goodProxyCount += result.success ? 1 : 0 
+      bar1.increment({ goodProxyCount })
     }
 
     return result
@@ -194,6 +209,7 @@ let promises = lines.map((proxyAddr) =>
 
 
 Promise.all(promises).then((results) => {
+  bar1.stop()
   if (!options.silent) {
     let table = new Table({style: {head: ['cyan']}, head: [
       'Proxy', 'Result', 'Time', 'Response'
