@@ -209,8 +209,9 @@ let promises = lines.map((proxyAddr) =>
 
 
 Promise.all(promises).then((results) => {
-  bar1.stop()
+  
   if (!options.silent) {
+    bar1.stop()
     let table = new Table({style: {head: ['cyan']}, head: [
       'Proxy', 'Result', 'Time', 'Response'
     ]});
