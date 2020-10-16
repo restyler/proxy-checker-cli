@@ -6,8 +6,8 @@
     "colors": "^1.4.0",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
-    "node-fetch": "^2.6.0",
-    "simple-proxy-agent": "^1.0.8",
+    "node-fetch": "^2.6.1",
+    "simple-proxy-agent": "^1.1.0",
     "user-agents": "^1.0.559"
   },
   "name": "proxy-checker-cli",
