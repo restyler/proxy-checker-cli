@@ -2,7 +2,6 @@
 'use strict';
 
 const fs = require('fs')
-const Table = require('cli-table3')
 const colors = require('colors')
 const singleRequestExecute = require('../request.js')
 const commandLineArgs = require('command-line-args')
@@ -114,6 +113,11 @@ const optionDefinitions = [
     type: Number,
     description: 'Limit number of proxies to check. Can be negative to trim trailing proxies from file (like arr.slice(0, -100) in js)',
     typeLabel: '{underline integer}'
+  },
+  { 
+    name: 'notable',
+    type: Boolean,
+    description: 'Hide results table. Useful for big proxy lists when progressbar is needed but final table is too big.'
   }
 ]
 
@@ -212,18 +216,25 @@ Promise.all(promises).then((results) => {
   
   if (!options.silent) {
     bar1.stop()
-    let table = new Table({style: {head: ['cyan']}, head: [
-      'Proxy', 'Result', 'Time', 'Response'
-    ]});
-    results.map((item) => {
-      table.push([
-        item.name,
-        item.success ? colors.green('TRUE') : colors.red('FALSE'),
-        item.time,
-        item.success ? item.response : colors.red(item.error)
-      ]);
-    })
-    options.mainLog(table.toString())
+
+    if (!options.notable) {
+      const Table = require('cli-table3')
+      
+      let table = new Table({style: {head: ['cyan']}, head: [
+        'Proxy', 'Result', 'Time', 'Response'
+      ]});
+      results.map((item) => {
+        table.push([
+          item.name,
+          item.success ? colors.green('TRUE') : colors.red('FALSE'),
+          item.time,
+          item.success ? item.response : colors.red(item.error)
+        ]);
+      })
+      options.mainLog(table.toString())
+
+    }
+    
   }
   
   let good = results.reduce((a,c) => a + (c.success ? 1 : 0), 0)
